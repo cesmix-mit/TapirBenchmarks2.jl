@@ -1,0 +1,12 @@
+name = "TapirBenchmarks2Tests"
+uuid = "3e7720be-5f94-4c50-abb8-90376fb81528"
+authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
+version = "0.1.0-DEV"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+TapirBenchmarks2 = "86a36448-dd21-4788-8b6c-4d82f5694fe8"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "1"

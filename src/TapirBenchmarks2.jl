@@ -1,5 +1,7 @@
 module TapirBenchmarks2
 
-# Write your package code here.
+include("utils.jl")
+include("bench_gemm.jl")
+include("bench_rnn.jl")
 
 end
