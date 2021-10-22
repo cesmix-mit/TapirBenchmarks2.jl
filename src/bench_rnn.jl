@@ -6,7 +6,7 @@ using BenchmarkTools
 
 const CACHE = Ref{Any}()
 
-function generate(; sizes = [1024, 2048], nsamples = 8)
+function generate(; sizes = [512, 1024, 2048], nsamples = 8)
     arrays = map(sizes) do n
         M = rand(n, n) ./ √n
         v0s = [randn(n) for _ in 1:nsamples]
