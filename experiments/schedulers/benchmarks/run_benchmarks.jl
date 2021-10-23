@@ -15,9 +15,12 @@ using PkgBenchmark
 resultdir = abspath(resultdir)
 mkpath(resultdir)
 
+SCHEDULERS = ["default", "workstealing", "depthfirst", "constantpriority", "randompriority"]
+
 for n in threads
-    for scheduler in ["default", "workstealing", "depthfirst"]
+    for scheduler in SCHEDULERS
         project = joinpath(@__DIR__, "../../../environments", scheduler)
+        @assert isdir(project)
 
         @info "Benchmarking `$scheduler` scheduler with `JULIA_NUM_THREADS=$n`"
         resultname = "result-$scheduler-$n"

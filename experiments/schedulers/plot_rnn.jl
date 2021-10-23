@@ -58,9 +58,10 @@ df_speedup = let
     # idx = df_stats.time_stat .== :median
     # idx = df_stats.time_stat .== :mean
     df1 = select(df_stats[idx, :], [:n, :scheduler, :nthreads, :time_ns])
-    df2 = combine(groupby(df1, [:n, :scheduler])) do g
-        t1 = only(g[g.nthreads .== 1, :]).time_ns
-        (; g.nthreads, speedup = t1 ./ g.time_ns)
+    df2 = combine(groupby(df1, :n)) do g
+        idx = (g.nthreads .== 1) .& (g.scheduler .== :default)
+        t1 = only(g[idx, :]).time_ns
+        (; g.nthreads, g.scheduler, speedup = t1 ./ g.time_ns)
     end
 end
 #-
@@ -75,12 +76,23 @@ plt_simple_speedup = @vlplot(
 )
 
 save(joinpath(resultdir, "simple_speedup.svg"), plt_simple_speedup)
+save(joinpath(resultdir, "simple_speedup.png"), plt_simple_speedup)
 
-@vlplot(
-    mark = {:line, point = true},
+plt_simple_speedup
+
+plt_speedup = @vlplot(
+    :line,
+    # mark = {:line, point = true},
     x = :nthreads,
     y = :speedup,
     row = :n,
     color = :scheduler,
+    # shape = :scheduler,
+    strokeDash = :scheduler,
     data = df_speedup,
 )
+
+save(joinpath(resultdir, "speedup.svg"), plt_speedup)
+save(joinpath(resultdir, "speedup.png"), plt_speedup)
+
+plt_speedup

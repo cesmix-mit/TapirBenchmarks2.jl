@@ -1,6 +1,9 @@
 JULIA = julia-tapir
 JULIA_CMD = $(JULIA) --startup-file=no --color=yes
 
+NONDEFAULT_SCHEDULERS = workstealing depthfirst constantpriority randompriority
+SCHEDULERS = default $(NONDEFAULT_SCHEDULERS)
+
 SHOW_MRKDOWN = JULIA_LOAD_PATH=@stdlib $(JULIA_CMD) --compile=min -O0 \
 -e 'using Markdown; display(Markdown.parse(read(ARGS[1], String)))'
 
@@ -11,14 +14,13 @@ export JULIA_PRECOMPILE=0
 help:
 	@$(SHOW_MRKDOWN) make-help.md
 
-precompile: \
-precompile-default precompile-depthfirst precompile-workstealing
+precompile: $(patsubst %, precompile-%, $(SCHEDULERS))
 
 precompile-default: instantiate
 	JULIA_LOAD_PATH=@:@stdlib JULIA_PROJECT=environments/$* \
 	$(JULIA_CMD) -e 'using Pkg; Pkg.precompile()'
 
-precompile-depthfirst precompile-workstealing: \
+$(patsubst %, precompile-%, $(NONDEFAULT_SCHEDULERS)): \
 precompile-%: \
 precompile-default \
 environments/%/Project.toml \
@@ -26,10 +28,9 @@ environments/%/Manifest.toml
 	JULIA_LOAD_PATH=@ JULIA_PROJECT=environments/$* \
 	$(JULIA_CMD) -e 'using TapirBenchmarks2'
 
-test: \
-test-default test-depthfirst test-workstealing
+test: $(patsubst %, test-%, $(SCHEDULERS))
 
-test-default test-depthfirst test-workstealing: \
+$(patsubst %, test-%, $(SCHEDULERS)): \
 test-%: \
 instantiate
 	JULIA_LOAD_PATH=@ JULIA_PROJECT=environments/$* \
@@ -46,10 +47,9 @@ update-default:
 	JULIA_PRECOMPILE=0 JULIA_LOAD_PATH=@:@stdlib JULIA_PROJECT=environments/default \
 	$(JULIA_CMD) -e 'using Pkg; Pkg.update()'
 
-refresh: \
-refresh-depthfirst refresh-workstealing
+refresh: $(patsubst %, refresh-%, $(NONDEFAULT_SCHEDULERS))
 
-refresh-depthfirst refresh-workstealing: \
+$(patsubst %, refresh-%, $(NONDEFAULT_SCHEDULERS)): \
 refresh-%: \
 environments/%/Project.toml \
 environments/%/Manifest.toml
@@ -58,12 +58,12 @@ resolve:
 	JULIA_PRECOMPILE=0 JULIA_LOAD_PATH=@:@stdlib JULIA_PROJECT=environments/default \
 	$(JULIA_CMD) -e 'using Pkg; Pkg.resolve()'
 
-environments/workstealing/Project.toml \
-environments/depthfirst/Project.toml: \
+$(patsubst %, environments/%/Project.toml, $(NONDEFAULT_SCHEDULERS)): \
 environments/%/Project.toml: environments/default/Project.toml
+	mkdir -pv environments/$*
 	cp $< $@
 
-environments/workstealing/Manifest.toml \
-environments/depthfirst/Manifest.toml: \
+$(patsubst %, environments/%/Manifest.toml, $(NONDEFAULT_SCHEDULERS)): \
 environments/%/Manifest.toml: environments/default/Manifest.toml
+	mkdir -pv environments/$*
 	cp $< $@
